@@ -1,0 +1,123 @@
+# LIS(최대증가부분수열)
+- 배열중에서 가장 긴 증가하는 부분의 수열의 길이, LIS, Longestr Increase Sequence라고 함 
+
+## 백준 11053 가장 긴 증가하는 부분 수열
+<img width="684" alt="스크린샷 2023-09-07 오후 4 16 50" src="https://github.com/ajhwan/Algorithm_study/assets/129160008/e6e8019a-7264-4849-855a-7a5b866e5ba4">
+<img width="684" alt="스크린샷 2023-09-07 오후 4 17 02" src="https://github.com/ajhwan/Algorithm_study/assets/129160008/e6533324-e768-4ebb-a4a7-92bcb78e0c4c">
+
+> ### code 첫번째 방법
+```cpp
+#include <cstdio>
+#include <iostream>
+#include <algorithm>
+using namespace std;
+int n, a[1001], cnt[1001], ret;
+int main(){
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", a + i);
+    }
+    for (int i = 0; i < n; i++) {
+      int maxValue = 0;
+      for (int j = 0; j < i; j++) {
+        if (a[j] < a[i] && maxValue < cnt[j]) maxValue = cnt[j];
+      }
+      cnt[i] = maxValue +1;
+      ret = max(ret,cnt[i]);
+    }
+    printf("%d\n", ret);
+}
+```
+- 배열의 요소들을 보면서(i를 순회) 현재 a[i]보다는 작은 것 중에서 cnt라는 배열에서 cnt중에 가장 큰 값을 maxValue에 담음
+- 그렇게 해서 완성된 cnt를 가장 큰 값에 +1를 해서 만듦
+- cnt배열을 만들고 그 중의 가장 큰 값이 정답이 됨
+- 시잔복잡도 : O(N^2)
+
+## 백준 14002 가장 긴 증가하는 부분 수열 4
+
+> ### code (for문을 통해서 푸는 방법)
+```cpp
+#include<cstdio>
+#include<algorithm>
+#include<vector>
+using namespace std;
+int n, a[1001], ret = 1, cnt[1001], idx;
+int prev_list[1001];
+vector<int> real;
+void go(int idx){
+    if(idx == -1) return;
+    real.push_back(a[idx]);
+    go(prev_list[idx]);
+    return;
+}
+int main(){
+    scanf("%d", &n);
+    for(int i = 0; i < n; i++){
+        scanf("%d", &a[i]);
+    }
+    fill(prev_list, prev_list + 1001, -1);
+    fill(cnt, cnt + 1001, 1);
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < i; j++){
+            if(a[j] < a[i] && cnt[i] < cnt[j] + 1){
+                cnt[i] = cnt[j] + 1;
+                prev_list[i] = j;
+                if(ret < cnt[i]){
+                    ret = cnt[i];
+                    idx = i;
+                }
+            }
+        }
+    }
+    printf("%d\n", ret);
+    go(idx);
+    for(int i = real.size() -1; i >= 0; i--){
+        printf("%d ", real[i]);
+    }
+    return 0;
+}
+```
+
+> ### code (위 문제를 좀 더 효울적으로 푸는 방법)
+- lower_bound를 통해 탐색을 할 때 O(logN)의 시간이 걸리게 하면 됨
+```cpp
+#include <cstdio>
+#include <algorithm>
+using namespace std;
+
+int n, lis[1001], len, num;
+int main() {
+	scanf("%d", &n);
+	for (int i = 0; i < n; i++){
+        scanf("%d", &num);
+        auto lowerPos = lower_bound(lis, lis + len, num);
+        if(*lowerPos == 0) len++;
+        *lowerPos = num;
+        for(int j = 0; j < n; j++){
+            printf("%d ", lis[j]);
+        }
+        printf("\n");
+    }
+	printf("%d", len);
+
+	return 0;
+}
+/*
+6
+10 20 10 30 25 50
+*/
+```
+- lowerPos에 "현재의 증가수열길이"중에서 num보다 작거나 같은 값의 위치를 찾음
+ - lower_bound는 정렬된 상태에서만 써야 함 
+- 1.만약 len안에 없다면 *lowerPos는 0을 반환
+  - 초기화를 0으로 했기 때문, *lowerPos에 해당값을 넣어서 배열을 변화시키고 len을 증가시킴
+- 2.만약 len안에 있다면 *lowerPos는 작거나 같은 값위치를 반환하고 그 값은 이제 좀 더 작거나 같은 값으로 변화
+  - 만약 num이 2라면 {1, 3} 은 {1, 2}이 되게 됩니다.  
+- '*' 이터레이터는 포인터가 아님
+- *가 오버로딩되어있어 "포인터"처럼 쓸 수 있는 것
+- 이것은 컨테이너안을 순휘하며 컨테이너안의 특정위치를 가리키고 스마트 포인터라고 부름
+- vector, deque, string은 포인터끼리 더하고 빼고 비교할 수 있으며 random access iterator이라고 함
+- 좀 더 효율적인 방법인 위 코드의 시간복잡도 : O(NlogN)
+
+
+
